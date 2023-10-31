@@ -7,7 +7,8 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Comprueba si se ha hecho clic en el botón de cierre de sesión
-if (isset($_GET["logout"])) { // Changed from $_POST to $_GET
+// if (isset($_GET["logout"])) { // Changed from $_POST to $_GET
+   if (isset($_POST["logout"])) { // Changed from $_GET to $_POST
     // Borra la cookie "user"
     setcookie("user", "", time() - 3600, "/");
     header("Location: /"); // Redirige al usuario a la página principal
@@ -67,7 +68,11 @@ if ($username) {
     }
 
     // Muestra el botón de cierre de sesión
-    echo '<p><a href="?logout=true">Cerrar sesión y borrar cookie</a></p>';
+    //  echo '<p><a href="?logout=true">Cerrar sesión y borrar cookie</a></p>';
+    	echo '<form method="post">
+    	<input type="hidden" name="logout" value="true">
+    	<input type="submit" value="Cerrar sesión y borrar cookie">
+	</form>';
 }
 ?>
 
