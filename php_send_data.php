@@ -7,8 +7,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Comprueba si se ha hecho clic en el botón de cierre de sesión
-// if (isset($_GET["logout"])) { // Changed from $_POST to $_GET
-   if (isset($_POST["logout"])) { // Changed from $_GET to $_POST
+if (isset($_POST["logout"])) {
     // Borra la cookie "user"
     setcookie("user", "", time() - 3600, "/");
     header("Location: /"); // Redirige al usuario a la página principal
@@ -39,7 +38,8 @@ if (isset($_POST["username"]) && isset($_POST["password"])) {
                 die("Error en la consulta a la BBDD: " . mysqli_error($conn));
             } elseif (mysqli_num_rows($result) > 0) {
                 // Usuario existe, establece la cookie "user"
-                setcookie("user", $username, time() + (86400 * 30), "/"); // 86400 = 1 day
+                $unique_string = bin2hex(random_bytes(16)); // Genera una cadena alfanumérica única y larga
+                setcookie("user", $unique_string, time() + (86400 * 30), "/"); // 86400 = 1 day
                 if(isset($_COOKIE["user"])) {
                     $username = $_COOKIE["user"];
                 }
@@ -62,17 +62,15 @@ if ($username) {
     echo '<img src="/'.$username.'/'.$username.'.jpg" alt="Imagen de bienvenida" width="200" height="150">';
 
     // Muestra los archivos .txt
-    $files = glob("/var/www/html/$username/*.txt");
+    $files = glob("/var/www/html/VULNERABLE/$username/*.txt");
     foreach($files as $file) {
         echo "<p><a href='/".$username."/".basename($file)."'>".basename($file)."</a></p>";
     }
 
     // Muestra el botón de cierre de sesión
-    //  echo '<p><a href="?logout=true">Cerrar sesión y borrar cookie</a></p>';
-    	echo '<form method="post">
-    	<input type="hidden" name="logout" value="true">
-    	<input type="submit" value="Cerrar sesión y borrar cookie">
+	echo '<form method="post">
+	<input type="hidden" name="logout" value="true">
+	<input type="submit" value="Cerrar sesión y borrar cookie">
 	</form>';
 }
 ?>
-
