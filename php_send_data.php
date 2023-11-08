@@ -10,6 +10,11 @@ error_reporting(E_ALL);
 if (isset($_POST["logout"])) {
     // Borra la cookie "user"
     setcookie("user", "", time() - 3600, "/");
+    // Borra la cookie "PHPSESSID"
+    if (isset($_COOKIE[session_name()])) {
+        setcookie(session_name(), "", time() - 3600, "/");
+    }
+    session_destroy();
     header("Location: /"); // Redirige al usuario a la página principal
     exit();
 }
