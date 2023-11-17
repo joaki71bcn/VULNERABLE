@@ -1,88 +1,209 @@
-<?php
-session_start();
+<?php 
 
-// Configurar el manejo de errores
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// Establemos la cookie de sesion como segura antes de su creacion: 
 
-// Comprueba si se ha hecho clic en el botón de cierre de sesión
-if (isset($_POST["logout"])) {
-    // Borra la cookie "user"
-    setcookie("user", "", time() - 3600, "/");
-    // Borra la cookie "PHPSESSID"
-    if (isset($_COOKIE[session_name()])) {
-        setcookie(session_name(), "", time() - 3600, "/");
-    }
-    session_destroy();
-    header("Location: /"); // Redirige al usuario a la página principal
-    exit();
-}
+session_set_cookie_params([ 
 
-// Obtener el valor de la cookie "user" y asignarlo a la variable $username
-$username = isset($_COOKIE["user"]) ? $_COOKIE["user"] : null;
+    'lifetime' => 0, 
 
-if (isset($_POST["username"]) && isset($_POST["password"])) {
-    $username = $_POST["username"];
-    $password = $_POST["password"];
+    'path' => '/', 
 
-    try {
-        // Intenta establecer la conexión a la BBDD
-        $conn = mysqli_connect("localhost", "root", "hacker2016", "test_app");
+    'domain' => $_SERVER['HTTP_HOST'], 
 
-        if (!$conn) {
-            // La conexión falló, muestra un mensaje personalizado
-            die("Error en la conexión a la BBDD: " . mysqli_connect_error());
-        } else {
-            // Consulta BBDD si usuario existe
-            $query = "SELECT * FROM usuarios WHERE username='$username' AND password='$password'";
-            $result = mysqli_query($conn, $query);
+    'secure' => false,     // or true if you really do use https 
 
-            if ($result === false) {
-                // Error en la consulta
-                die("Error en la consulta a la BBDD: " . mysqli_error($conn));
-            } elseif (mysqli_num_rows($result) > 0) {
-                // Usuario existe, establece la cookie "user"
-                $unique_string = bin2hex(random_bytes(16)); // Genera una cadena alfanumérica única y larga
-                $cookie_options = array(
-                    'expires' => time() + (86400 * 30),
-                    'path' => '/',
-                    'secure' => false,     // or true if you really do use https
-                    'httponly' => true,
-                    'samesite' => 'Strict',
-                );
-                setcookie('user', $unique_string, $cookie_options);
-                if(isset($_COOKIE["user"])) {
-                    $username = $_COOKIE["user"];
-                }
-            } else {
-                // Usuario no existe, muestra un mensaje de error
-                echo "<p>El usuario $username no existe.</p>";
-                exit();
-            }
-        }
-    } catch (Exception $e) {
-        echo 'Caught exception: ',  $e->getMessage(), "\n";
-    }
-}
+    'httponly' => true, 
 
-if ($username) {
-    // Usuario existe
-    echo "<h1>Bienvenido a la aplicación</h1>";
-    echo "<p>El usuario $username existe, ¡Bienvenido!</p>";
-    // Muestra imagen
-    echo '<img src="/'.$username.'/'.$username.'.jpg" alt="Imagen de bienvenida" width="200" height="150">';
+    'samesite' => 'Strict', 
 
-    // Muestra los archivos .txt
-    $files = glob("/var/www/html/VULNERABLE/$username/*.txt");
-    foreach($files as $file) {
-        echo "<p><a href='/".$username."/".basename($file)."'>".basename($file)."</a></p>";
-    }
+]); 
 
-    // Muestra el botón de cierre de sesión
-	echo '<form method="post">
-	<input type="hidden" name="logout" value="true">
-	<input type="submit" value="Cerrar sesión y borrar cookie">
-	</form>';
-}
-?>
+  
+
+session_start(); 
+
+  
+
+// Configurar el manejo de errores 
+
+ini_set('display_errors', 1); 
+
+ini_set('display_startup_errors', 1); 
+
+error_reporting(E_ALL); 
+
+  
+
+// Comprueba si se ha hecho clic en el botón de cierre de sesión 
+
+if (isset($_POST["logout"])) { 
+
+    // Borra la cookie "user" 
+
+    setcookie("user", "", time() - 3600, "/"); 
+
+    // Borra la cookie "PHPSESSID" 
+
+    if (isset($_COOKIE[session_name()])) { 
+
+        setcookie(session_name(), "", time() - 3600, "/"); 
+
+    } 
+
+    session_destroy(); 
+
+    header("Location: /"); // Redirige al usuario a la página principal 
+
+    exit(); 
+
+} 
+
+  
+
+// Obtener el valor de la cookie "user" y asignarlo a la variable $username 
+
+$username = isset($_COOKIE["user"]) ? $_COOKIE["user"] : null; 
+
+  
+
+if (isset($_POST["username"]) && isset($_POST["password"])) { 
+
+    $username = $_POST["username"]; 
+
+    $password = $_POST["password"]; 
+
+  
+
+    try { 
+
+        // Intenta establecer la conexión a la BBDD 
+
+        $conn = mysqli_connect("localhost", "root", "hacker2016", "test_app"); 
+
+  
+
+        if (!$conn) { 
+
+            // La conexión falló, muestra un mensaje personalizado 
+
+            die("Error en la conexión a la BBDD: " . mysqli_connect_error()); 
+
+        } else { 
+
+            // Consulta BBDD si usuario existe 
+
+            // Old vulnerable code: 
+
+            // $query = "SELECT * FROM usuarios WHERE username='$username' AND password='$password'"; 
+
+            // $result = mysqli_query($conn, $query); 
+
+  
+
+            // New secure code: 
+
+            $stmt = $conn->prepare("SELECT * FROM usuarios WHERE username=? AND password=?"); 
+
+            $stmt->bind_param("ss", $username, $password); 
+
+            $stmt->execute(); 
+
+            $result = $stmt->get_result(); 
+
+  
+
+            if ($result === false) { 
+
+                // Error en la consulta 
+
+                die("Error en la consulta a la BBDD: " . mysqli_error($conn)); 
+
+            } elseif ($result->num_rows > 0) { 
+
+                // Usuario existe, establece la cookie "user" 
+
+                $unique_string = bin2hex(random_bytes(16)); // Genera una cadena alfanumérica única y larga 
+
+                $cookie_options = array( 
+
+                    'expires' => time() + (86400 * 30), 
+
+                    'path' => '/', 
+
+                    'secure' => false,     // or true if you really do use https 
+
+                    'httponly' => true, 
+
+                    'samesite' => 'Strict', 
+
+                ); 
+
+                setcookie('user', $unique_string, $cookie_options); 
+
+                if(isset($_COOKIE["user"])) { 
+
+                    $username = $_COOKIE["user"]; 
+
+                } 
+
+            } else { 
+
+                // Usuario no existe, muestra un mensaje de error 
+
+                echo "<p>El usuario $username no existe.</p>"; 
+
+                exit(); 
+
+            } 
+
+        } 
+
+    } catch (Exception $e) { 
+
+        echo 'Caught exception: ',  $e->getMessage(), "\n"; 
+
+    } 
+
+} 
+
+  
+
+if ($username) { 
+
+    // Usuario existe 
+
+    echo "<h1>Bienvenido a la aplicación</h1>"; 
+
+    echo "<p>El usuario $username existe, ¡Bienvenido!</p>"; 
+
+    // Muestra imagen 
+
+    echo '<img src="/'.$username.'/'.$username.'.jpg" alt="Imagen de bienvenida" width="200" height="150">'; 
+
+  
+
+    // Muestra los archivos .txt 
+
+    $files = glob("/var/www/html/VULNERABLE/$username/*.txt"); 
+
+    foreach($files as $file) { 
+
+        echo "<p><a href='/".$username."/".basename($file)."'>".basename($file)."</a></p>"; 
+
+    } 
+
+  
+
+    // Muestra el botón de cierre de sesión 
+
+echo '<form method="post"> 
+
+<input type="hidden" name="logout" value="true"> 
+
+<input type="submit" value="Cerrar sesión y borrar cookie"> 
+
+</form>'; 
+
+} 
+
+?> 
