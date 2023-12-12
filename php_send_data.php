@@ -1,4 +1,7 @@
 <?php
+// Anti CSP vulnerability
+header("Content-Security-Policy: default-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; require-trusted-types-for 'script'; frame-ancestors 'none'; form-action 'self';");
+// Session cookie
 session_set_cookie_params(['lifetime' => 0, 'path' => '/', 'domain' => $_SERVER['HTTP_HOST'], 'secure' => true, 'httponly' => true, 'samesite' => 'Strict']);
 session_start();
 ini_set('display_errors', 1);
