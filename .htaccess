@@ -1,0 +1,17 @@
+# Otros ajustes del archivo .htaccess pueden estar aquí
+
+# Configuración de la cabecera X-Frame-Options
+Header always set X-Frame-Options "deny"
+
+# Configuración de la política de seguridad de contenido (CSP)
+Header always set Content-Security-Policy "default-src 'self'; 
+                                          img-src 'self'; 
+                                          script-src 'self'; 
+                                          style-src 'self'; 
+                                          object-src 'none'; 
+                                          require-trusted-types-for 'script'; 
+                                          frame-ancestors 'none'; 
+                                          form-action 'self';"
+
+# Otros ajustes del archivo .htaccess pueden estar aquí
+
